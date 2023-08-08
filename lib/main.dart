@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:github_client/post.dart';
+import 'package:github_client/post_list.dart';
+import 'package:github_client/widget_text_input.dart';
+
 
 void main() {
   dotenv.load(fileName: ".env.development");
@@ -52,98 +55,5 @@ class _MyHomePageState extends State<MyHomePage> {
             Expanded(child: PostList(this.posts))
           ],
         ));
-  }
-}
-
-class WidgetTextInput extends StatefulWidget {
-  WidgetTextInput(this.onChanged);
-
-  final Function(String) onChanged;
-
-  @override
-  State<WidgetTextInput> createState() => _WidgetTextInputState();
-}
-
-class _WidgetTextInputState extends State<WidgetTextInput> {
-  String username = '';
-  final controller = TextEditingController();
-
-  @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  void _onChanged() {
-    setState(() {
-      FocusScope.of(context).unfocus();
-      widget.onChanged(controller.text);
-      username = controller.text;
-      controller.clear();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-        controller: controller,
-        onSubmitted: (value) => _onChanged(),
-        decoration: InputDecoration(
-          prefixIcon: const Icon(Icons.person),
-          border: OutlineInputBorder(),
-          labelText: 'Username',
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.clear),
-            onPressed: _onChanged,
-          ),
-        ));
-  }
-}
-
-class PostList extends StatefulWidget {
-  final List<Post> posts;
-
-  PostList(this.posts);
-
-  @override
-  State<PostList> createState() => _PostListState();
-}
-
-class _PostListState extends State<PostList> {
-  void like(Function callback) {
-    setState(() {
-      callback();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-        itemCount: widget.posts.length,
-        itemBuilder: (context, index) {
-          var post = widget.posts[index];
-          return Card(
-            child: Row(children: <Widget>[
-              Expanded(
-                  child: ListTile(
-                title: Text(post.title),
-                subtitle: Text(post.body),
-                // leading: Icon(Icons.person),
-                // trailing: Icon(Icons.favorite),
-              )),
-              Row(children: <Widget>[
-                Container(
-                  child: Text(post.likes.toString()),
-                  padding: const EdgeInsets.all(10),
-                ),
-                IconButton(
-                  icon: Icon(Icons.thumb_up),
-                  onPressed: () => this.like(post.likePost),
-                  color: post.isLiked ? Colors.deepPurple : Colors.grey,
-                )
-              ])
-            ]),
-          );
-        });
   }
 }
