@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:github_client/appbar.dart';
 import 'package:github_client/post.dart';
 import 'package:github_client/post_list.dart';
 import 'package:github_client/widget_text_input.dart';
@@ -23,12 +24,18 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text('Github Client')),
-        body: Column(
-          children: <Widget>[
-            Expanded(child: WidgetTextInput(this.changeText)),
-            Expanded(child: PostList(this.posts))
-          ],
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(100),
+          child: customAppBar,
+        ),
+        body: Container(
+          margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+          child: Column(
+            children: <Widget>[
+              Expanded(child: WidgetTextInput(this.changeText)),
+              Expanded(child: PostList(this.posts))
+            ],
+          ),
         ));
   }
 }

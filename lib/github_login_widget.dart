@@ -1,6 +1,9 @@
+import 'dart:developer';
 import 'dart:io';
 
-import 'package:github_client/my_home_page.dart';
+import 'package:github/github.dart';
+import 'package:github_client/appbar.dart';
+import 'package:github_client/github_summary.dart';
 import 'package:http/http.dart' as http;
 import 'package:oauth2/oauth2.dart' as oauth2;
 import 'package:flutter/material.dart';
@@ -38,6 +41,8 @@ class _GithubLoginState extends State<GithubLogin> {
   @override
   Widget build(BuildContext context) {
     final client = _client;
+    String accessToken = _client?.credentials.accessToken ?? '';
+    GitHub githubCLient = _getGitHub(accessToken);
 
     if (client != null) {
       return widget.builder(context, client);
@@ -45,43 +50,15 @@ class _GithubLoginState extends State<GithubLogin> {
 
     void successLogin() {
       Navigator.push(
-          context, MaterialPageRoute(builder: (context) => MyHomePage()));
+          context,
+          MaterialPageRoute(
+              builder: (context) => GithubSummary(github: githubCLient)));
     }
 
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(100),
-        child: AppBar(
-          title: Container(
-            margin: const EdgeInsets.only(top: 5),
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.black,
-                  width: 3,
-                ),
-              ),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                Image(
-                  image: AssetImage('./assets/images/gitpher.jpeg'),
-                  width: 40,
-                  height: 40,
-                ),
-                Text(
-                  'Githper',
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                )
-              ],
-            ),
-          ),
-        ),
+        child: customAppBar,
       ),
       body: Center(
           child: Column(
@@ -116,20 +93,22 @@ class _GithubLoginState extends State<GithubLogin> {
                   ),
                   mouseCursor: MaterialStateProperty.all(MouseCursor.defer),
                 ),
-                onHover: (value) {
-                  setState(() {});
-                },
                 onPressed: () async {
                   await _redirectServer?.close();
 
-                  _redirectServer = await HttpServer.bind('localhost', 0);
+                  _redirectServer = await HttpServer.bind('localhost', 33719);
 
-                  var authenticatedHttpClient = await _getOAuth2Client(
-                      Uri.parse(
-                          'http://localhost:${_redirectServer!.port}/auth'));
+                  var redirectUrl = Uri.parse(
+                      'http://localhost:${_redirectServer!.port}/auth');
+                  // print('Listening on $redirectUrl');
+
+                  var authenticatedHttpClient =
+                      await _getOAuth2Client(redirectUrl);
                   setState(() {
                     _client = authenticatedHttpClient;
-
+                    accessToken = _client?.credentials.accessToken ?? '';
+                    // print('inStarte GithubLOGIN: $accessToken');
+                    githubCLient = _getGitHub(accessToken);
                     successLogin();
                   });
                 },
@@ -174,11 +153,11 @@ class _GithubLoginState extends State<GithubLogin> {
   }
 
   Future<void> _redirect(Uri authorizationUrl) async {
-    // if (await canLaunchUrl(authorizationUrl)) {
-    await launchUrl(authorizationUrl);
-    // } else {
-    //   throw GithubLoginException('Could not launch $authorizationUrl');
-    // }
+    if (await canLaunchUrl(authorizationUrl)) {
+      await launchUrl(authorizationUrl);
+    } else {
+      throw GithubLoginException('Could not launch $authorizationUrl');
+    }
   }
 
   Future<Map<String, String>> _listen() async {
@@ -208,4 +187,8 @@ class GithubLoginException implements Exception {
   final String message;
   @override
   String toString() => message;
+}
+
+GitHub _getGitHub(String accessToken) {
+  return GitHub(auth: Authentication.withToken(accessToken));
 }

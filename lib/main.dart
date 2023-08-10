@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:github/github.dart';
 import 'package:github_client/github_login_widget.dart';
 import 'package:github_client/github_oauth_client.dart';
 
@@ -24,7 +23,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.lightBlue,
           visualDensity: VisualDensity.adaptivePlatformDensity),
       home: GithubLogin(
-        builder: (context, client) {
+        builder: (context, httpClient) {
           return Scaffold(
             appBar: AppBar(
               title: Text('Logged in to Github'),
